@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ecm_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ecm_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/ecm_db?sslmode=disable
+    depends_on:
+      - postgres
+    entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecm_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
