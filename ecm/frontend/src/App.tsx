@@ -4,24 +4,27 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import Header from './components/layout/Header';
-import Footer from '././components/layout/Footer';
+import Footer from './components/layout/Footer';
 import Home from './pages/Home';
-import Login from '././pages/Login';
-import Register from '././pages/Register';
-import ProductDetails from '././pages/ProductDetails';
-import Cart from '././pages/Cart';
-import Checkout from '././pages/Checkout';
-import UserProfile from '././pages/UserProfile';
-import UserOrders from '././pages/UserOrders';
-import OrderDetails from '././pages/OrderDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ProductDetails from './pages/ProductDetails';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import UserProfile from './pages/UserProfile';
+import UserOrders from './pages/UserOrders';
+import OrderDetails from './pages/OrderDetails';
 import ShopManagement from './pages/seller/ShopManagement';
-import ProductManagement from '././pages/seller/ProductManagement';
+import ProductManagement from './pages/seller/ProductManagement';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import CategoryManagement from '././pages/admin/CategoryManagement';
-import NotFound from '././pages/NotFound';
+import CategoryManagement from './pages/admin/CategoryManagement';
+import ShopManagementAdmin from './pages/admin/ShopManagement';
+import UserManagementAdmin from './pages/admin/UserManagement';
+import OrderManagementAdmin from './pages/admin/OrderManagement';
+import NotFound from './pages/NotFound';
 import PrivateRoute from './components/common/PrivateRoute';
 import { useAuth } from './contexts/AuthContext';
-import SearchResults from '././pages/SearchResults';
+import SearchResults from './pages/SearchResults';
 
 const theme = createTheme({
     palette: {
@@ -95,6 +98,33 @@ const App: React.FC = () => {
                             element={
                                 <PrivateRoute
                                     element={<CategoryManagement />}
+                                    requiredRole="admin"
+                                />
+                            }
+                        />
+                        <Route
+                            path="/admin/shops"
+                            element={
+                                <PrivateRoute
+                                    element={<ShopManagementAdmin />}
+                                    requiredRole="admin"
+                                />
+                            }
+                        />
+                        <Route
+                            path="/admin/users"
+                            element={
+                                <PrivateRoute
+                                    element={<UserManagementAdmin />}
+                                    requiredRole="admin"
+                                />
+                            }
+                        />
+                        <Route
+                            path="/admin/orders"
+                            element={
+                                <PrivateRoute
+                                    element={<OrderManagementAdmin />}
                                     requiredRole="admin"
                                 />
                             }

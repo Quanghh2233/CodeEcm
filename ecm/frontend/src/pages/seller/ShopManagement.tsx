@@ -54,17 +54,22 @@ const ShopManagement: React.FC = () => {
 
     useEffect(() => {
         fetchShops();
-    }, []);
+    }, [token]);
 
     const fetchShops = async () => {
-        if (!token) return;
+        if (!token) {
+            console.log("No token available");
+            return;
+        }
         setLoading(true);
         try {
+            console.log("Fetching shops...");
             const response = await axios.get(`${API_URL}/shops`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log("Shops fetched:", response.data);
             setShops(response.data);
         } catch (error) {
             console.error('Error fetching shops:', error);
@@ -75,11 +80,12 @@ const ShopManagement: React.FC = () => {
     };
 
     const handleOpenDialog = (shop: Shop | null = null) => {
+        console.log("Opening dialog for shop:", shop);
         setCurrentShop(shop);
         if (shop) {
             setFormData({
                 name: shop.name,
-                description: shop.description,
+                description: shop.description || '',
             });
         } else {
             setFormData({
@@ -91,6 +97,7 @@ const ShopManagement: React.FC = () => {
     };
 
     const handleCloseDialog = () => {
+        console.log("Closing dialog");
         setOpenDialog(false);
         setCurrentShop(null);
     };
@@ -104,7 +111,12 @@ const ShopManagement: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!token) return;
+        if (!token) {
+            toast.error("You must be logged in");
+            return;
+        }
+
+        console.log("Submitting shop data:", formData);
 
         try {
             if (currentShop) {
@@ -134,9 +146,11 @@ const ShopManagement: React.FC = () => {
             }
             handleCloseDialog();
             fetchShops();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving shop:', error);
-            toast.error(currentShop ? 'Failed to update shop' : 'Failed to create shop');
+            const errorMsg = error.response?.data?.error ||
+                (currentShop ? 'Failed to update shop' : 'Failed to create shop');
+            toast.error(errorMsg);
         }
     };
 
@@ -163,22 +177,6 @@ const ShopManagement: React.FC = () => {
         navigate(`/seller/products?shop_id=${shopId}`);
     };
 
-    if (loading && shops.length === 0) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-                <CircularProgress />
-            </Container>
-        );
-    }
-
-    if (error) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-                <Alert severity="error">{error}</Alert>
-            </Container>
-        );
-    }
-
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -187,13 +185,19 @@ const ShopManagement: React.FC = () => {
                     variant="contained"
                     color="primary"
                     startIcon={<AddIcon />}
-                    onClick={() => handleOpenDialog()}
+                    onClick={() => handleOpenDialog(null)}
                 >
                     Create Shop
                 </Button>
             </Box>
 
-            {shops.length === 0 ? (
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <CircularProgress />
+                </Box>
+            ) : error ? (
+                <Alert severity="error">{error}</Alert>
+            ) : shops.length === 0 ? (
                 <Paper sx={{ p: 3, textAlign: 'center' }}>
                     <Typography variant="body1" paragraph>
                         You don't have any shops yet.
@@ -202,7 +206,7 @@ const ShopManagement: React.FC = () => {
                         variant="contained"
                         color="primary"
                         startIcon={<AddIcon />}
-                        onClick={() => handleOpenDialog()}
+                        onClick={() => handleOpenDialog(null)}
                     >
                         Create Your First Shop
                     </Button>
@@ -256,8 +260,15 @@ const ShopManagement: React.FC = () => {
             )}
 
             {/* Create/Edit Shop Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-                <DialogTitle>{currentShop ? 'Edit Shop' : 'Create New Shop'}</DialogTitle>
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    {currentShop ? 'Edit Shop' : 'Create New Shop'}
+                </DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
